@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.onlineShop.dao.ProfessionDao">
+    <!--<select id="countByExample" parameterType="com.onlineShop.entity.Profession" resultType="java.lang.Integer">-->
+        <!--select count(*) from profession-->
+        <!--<if test="_parameter != null">-->
+            <!--<include refid="Example_Where_Clause" />-->
+        <!--</if>-->
+    <!--</select>-->
+    <select id="selectAllProfessions" parameterType="java.lang.String" resultType="com.onlineShop.entity.Profession">
+        select * from profession
+    </select>
+
+    <select id="selectProfessionByName" parameterType="java.lang.String" resultType="com.onlineShop.entity.Profession">
+        select profession.*,branch.name,institution.name from profession,branch,institution
+        where profession.name = #{name} and profession.branch_id = branch.id and branch.institution_id = institution.id
+    </select>
+
+    <select id="selectProfessionByPrimaryKey" parameterType="java.lang.Integer" resultType="com.onlineShop.entity.Profession">
+        select profession.*,branch.name,institution.name from profession,branch,institution
+        where profession.id = #{id} and profession.branch_id = branch.id and branch.institution_id = institution.id
+    </select>
+
+    <select id="selectProfessionsByInstitution" parameterType="java.lang.String" resultType="com.onlineShop.entity.Profession">
+        select profession.*,branch.name,institution.name from profession,branch,institution
+        where institution.name=#{name} and branch.institution_id = institution.id and profession.branch_id = branch.id
+    </select>
+
+    <select id="selectProfessionsByBranch" parameterType="java.lang.String" resultType="com.onlineShop.entity.Profession">
+        select profession.*,branch.name,institution.name from profession,branch,institution
+        where profession.branch_id = branch.id and branch.name = #{name} and branch.institution_id = institution.id
+    </select>
+
+    <insert id="insertProfession" parameterType="com.onlineShop.entity.Profession">
+    insert into profession (id, name, branch_id,professionstatus)
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{branchId,jdbcType=INTEGER},
+    #{professionStatus,jdbcType=INTEGER})
+    </insert>
+
+    <delete id="deleteProfession" parameterType="java.lang.Integer">
+        delete from profession where id = #{id}
+    </delete>
+    
+    <update id="updateProfession" parameterType="com.onlineShop.entity.Profession">
+        update profession
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="branchId != null">
+                branch_id = #{branchId},
+            </if>
+            <if test="professionstatus != null">
+                professionstatus = #{professionstatus},
+            </if>
+        </set>
+       where id = #{id}
+    </update>
+</mapper>

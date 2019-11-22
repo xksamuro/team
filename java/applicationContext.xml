@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd">
+    <!-- Spring的配置文件，这里主要配置和业务逻辑有关的 -->
+    <!--=================== 数据源，事务控制，xxx ================-->
+    <!--<context:component-scan base-package="com.onlineShop">
+    </context:component-scan>-->
+    <context:component-scan base-package="com.onlineShop">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <context:property-placeholder location="classpath:dbconfig.properties"/>
+    <!--配置连接-->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+    </bean>
+    <!--<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+            &lt;!&ndash; 基本属性 url、user、password &ndash;&gt;
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+
+        &lt;!&ndash; 配置初始化大小、最小、最大 &ndash;&gt;
+        <property name="initialSize" value="1" />
+        <property name="minIdle" value="1" />
+        <property name="maxActive" value="20" />
+
+        &lt;!&ndash; 配置获取连接等待超时的时间 &ndash;&gt;
+        <property name="maxWait" value="60000" />
+
+        &lt;!&ndash; 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 &ndash;&gt;
+        <property name="timeBetweenEvictionRunsMillis" value="60000" />
+
+        &lt;!&ndash; 配置一个连接在池中最小生存的时间，单位是毫秒 &ndash;&gt;
+        <property name="minEvictableIdleTimeMillis" value="300000" />
+
+        <property name="validationQuery" value="SELECT 'x'" />
+        <property name="testWhileIdle" value="true" />
+        <property name="testOnBorrow" value="false" />
+        <property name="testOnReturn" value="false" />
+
+        &lt;!&ndash; 打开PSCache，并且指定每个连接上PSCache的大小 &ndash;&gt;
+        <property name="poolPreparedStatements" value="true" />
+        <property name="maxPoolPreparedStatementPerConnectionSize" value="20" />
+
+        &lt;!&ndash; 配置监控统计拦截的filters，去掉后监控界面sql无法统计 &ndash;&gt;
+        <property name="filters" value="stat" />
+        </bean>-->
+
+
+    <!--================== 配置和MyBatis的整合=============== -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 指定mybatis全局配置文件的位置 -->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 指定mybatis，mapper文件的位置 -->
+        <property name="mapperLocations" value="classpath:com/onlineShop/mapper/*.xml"></property>
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageInterceptor">
+                    <property name="properties">
+                        <value>
+
+                        </value>
+                    </property>
+                </bean>
+            </array>
+        </property>
+    </bean>
+
+    <!-- 配置扫描器 扫描所有dao接口 将mybatis接口的实现加入到ioc容器中 -->
+    <mybatis-spring:scan base-package="com.onlineShop.dao"/>
+    <!--<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.fengyun.jdshop.dao"></property>
+    </bean>-->
+
+    <!-- 配置一个可以执行批量的sqlSession -->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory"></constructor-arg>
+        <constructor-arg name="executorType" value="BATCH"></constructor-arg>
+    </bean>
+
+    <!-- ===============事务控制的配置 ================-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!--控制住数据源  -->
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+<!--
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+-->
+    <!--==========================Shiro的配置============================-->
+    <!--
+    1. 配置 SecurityManager!
+    -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="cacheManager" ref="cacheManager"/>
+        <property name="authenticator" ref="authenticator"></property>
+
+        <property name="realms">
+            <list>
+                <ref bean="jdbcRealm"/>
+            </list>
+        </property>
+
+        <!--
+                <property name="rememberMeManager.cookie.maxAge" value="10"></property>
+        -->
+    </bean>
+
+    <!-- Let's use some enterprise caching support for better performance.  You can replace this with any enterprise
+         caching framework implementation that you like (Terracotta+Ehcache, Coherence, GigaSpaces, etc -->
+    <!--
+    2. 配置 CacheManager.
+    2.1 需要加入 ehcache 的 jar 包及配置文件.
+    -->
+    <bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+        <!-- Set a net.sf.ehcache.CacheManager instance here if you already have one.  If not, a new one
+             will be creaed with a default config:
+             <property name="cacheManager" ref="ehCacheManager"/> -->
+        <!-- If you don't have a pre-built net.sf.ehcache.CacheManager instance to inject, but you want
+             a specific Ehcache configuration to be used, specify that here.  If you don't, a default
+             will be used.: -->
+        <property name="cacheManagerConfigFile" value="classpath:ehcache.xml"/>
+    </bean>
+
+    <bean id="authenticator"
+          class="org.apache.shiro.authc.pam.ModularRealmAuthenticator">
+        <property name="authenticationStrategy">
+            <bean class="org.apache.shiro.authc.pam.AtLeastOneSuccessfulStrategy"></bean>
+        </property>
+    </bean>
+
+    <!-- Used by the SecurityManager to access security data (users, roles, etc).
+         Many other realm implementations can be used too (PropertiesRealm,
+         LdapRealm, etc. -->
+    <!--
+    	3. 配置 Realm
+    	3.1 直接配置实现了 org.apache.Shiro.realm.Realm 接口的 bean
+    -->
+    <bean id="jdbcRealm" class="com.onlineShop.Shiro.ShiroRealm">
+        <property name="credentialsMatcher">
+            <bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+                <property name="hashAlgorithmName" value="MD5"></property>
+                <property name="hashIterations" value="1024"></property>
+            </bean>
+        </property>
+    </bean>
+
+
+
+    <!--
+    4. 配置 LifecycleBeanPostProcessor. 可以自定的来调用配置在 Spring IOC 容器中 Shiro bean 的生命周期方法.
+    -->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+    <!-- Enable Shiro Annotations for Spring-configured beans.  Only run after
+         the lifecycleBeanProcessor has run: -->
+    <!--
+    5. 启用 IOC 容器中使用 Shiro 的注解. 但必须在配置了 LifecycleBeanPostProcessor 之后才可以使用.
+    -->
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+          depends-on="lifecycleBeanPostProcessor"/>
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+
+    <!-- Define the Shiro Filter here (as a FactoryBean) instead of directly in web.xml -
+         web.xml uses the DelegatingFilterProxy to access this bean.  This allows us
+         to wire things with more control as well utilize nice Spring things such as
+         PropertiesPlaceholderConfigurer and abstract beans or anything else we might need: -->
+    <!--
+    6. 配置 ShiroFilter.
+    6.1 id 必须和 web.xml 文件中配置的 DelegatingFilterProxy 的 <filter-name> 一致.
+                      若不一致, 则会抛出: NoSuchBeanDefinitionException. 因为 Shiro 会来 IOC 容器中查找和 <filter-name> 名字对应的 filter bean.
+    -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <property name="loginUrl" value="/login.jsp"/>
+        <property name="successUrl" value="/index.jsp"/>
+        <property name="unauthorizedUrl" value="/unauthorized.jsp"/>
+
+        <!--
+                <property name="filterChainDefinitionMap" ref="filterChainDefinitionMap"></property>
+        -->
+
+        <!--
+        	配置哪些页面需要受保护.
+        	以及访问这些页面需要的权限.
+        	1). anon 可以被匿名访问
+        	2). authc 必须认证(即登录)后才可能访问的页面.
+        	3). logout 登出.
+        	4). roles 角色过滤器
+        -->
+        <property name="filterChainDefinitions">
+            <value>
+                /css/** = anon
+                /images/** = anon
+                /js/** = anon
+                /lib/** = anon
+                / = anon
+                /login = anon
+
+                /logout = logout
+
+                <!--
+                                /Shiro/login = anon
+                -->
+
+                <!--/user.jsp = roles[user]
+                /admin.jsp = roles[admin]-->
+
+                # everything else requires authentication:
+                /** = authc
+            </value>
+        </property>
+    </bean>
+
+    <!-- 配置一个 bean, 该 bean 实际上是一个 Map. 通过实例工厂方法的方式 -->
+    <!--<bean id="filterChainDefinitionMap"
+          factory-bean="filterChainDefinitionMapBuilder" factory-method="buildFilterChainDefinitionMap"></bean>
+
+    <bean id="filterChainDefinitionMapBuilder"
+          class="com.fengyun.jdshop.Shiro.factory.FilterChainDefinitionMapBuilder"></bean>
+
+    <bean id="shiroService"
+          class="com.atguigu.Shiro.services.ShiroService"></bean>-->
+
+    <!--================================Shiro的配置结束====================================-->
+
+</beans>

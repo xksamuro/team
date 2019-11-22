@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.onlineShop.dao.RoleDao">
+    <resultMap id="BaseResultMap" type="com.onlineShop.entity.Role" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="rolename" property="rolename" jdbcType="VARCHAR" />
+        <result column="roledesc" property="roledesc" jdbcType="VARCHAR" />
+        <result column="createtime" property="createtime" jdbcType="DATE" />
+    </resultMap>
+    <!--void addRole(Role role);-->
+    <insert id="addRole" parameterType="com.onlineShop.entity.Role">
+        insert into role (id, rolename, roledesc,
+      createtime)
+    values (#{id,jdbcType=INTEGER}, #{rolename,jdbcType=VARCHAR}, #{roledesc,jdbcType=VARCHAR},
+      #{createtime,jdbcType=DATE})
+    </insert>
+    <!--void deleteById(Integer id);-->
+    <delete id="deleteById" parameterType="com.onlineShop.entity.Role">
+        delete from role where id = #{id}
+    </delete>
+    <!--void updatById(Integer id);-->
+    <update id="updateById" parameterType="com.onlineShop.entity.Role">
+        update role
+        <set>
+        <if test="rolename != null">
+            rolename=#{rolename,jdbcType=VARCHAR},
+        </if>
+        <if test="roledesc != null">
+            roledesc=#{roledesc,jdbcType=VARCHAR},
+        </if>
+        <if test="createtime != null">
+            createtime=#{createtime,jdbcType=VARCHAR},
+        </if>
+        </set>
+        where id = #{id}
+    </update>
+    <!--Role findByid(Integer id);-->
+    <select id="findByid" resultType="com.onlineShop.entity.Role">
+        select * from role where id =#{id}
+    </select>
+    <!--List<Role> findAllRole();-->
+    <select id="findAllRole" resultMap="BaseResultMap">
+        select * from role
+    </select>
+    <!--void allocatePermission(Integer per_id, Integer role_id);-->
+    <insert id="allocatePermission" >
+        insert into role_permissions values (#{1},#{0})
+    </insert>
+</mapper>

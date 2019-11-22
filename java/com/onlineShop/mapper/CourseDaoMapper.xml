@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.onlineShop.dao.CourseDao">
+    <select id="selectCoursesByClassId" parameterType="java.lang.Integer" resultType="com.onlineShop.entity.Course" >
+        select * from student_classes,plancourse,course where course.course_num = plancourse.coursenum and
+        plancourse.plan_id = student_classes.plan_id and student_classes.classes_id = #{class_id}
+    </select>
+</mapper>

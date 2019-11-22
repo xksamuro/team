@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.onlineShop.dao.PermissionDao">
+    <resultMap id="BaseResultMap" type="com.onlineShop.entity.Permissions" >
+        <id column="id" property="perId" jdbcType="INTEGER" />
+        <result column="pername" property="pername" jdbcType="VARCHAR" />
+        <result column="perdesc" property="perdesc" jdbcType="VARCHAR" />
+        <result column="createtime" property="createtime" jdbcType="DATE" />
+    </resultMap>
+    <!--List<Permissions> findAll();-->
+    <select id="findAll" resultMap="BaseResultMap">
+        select * from permissions
+    </select>
+    <!--Permissions findByName();-->
+    <select id="findByName" resultMap="BaseResultMap">
+        select * from permissions where pername = #{pername}
+    </select>
+    <!--Permissions findById(Integer per_id);-->
+    <select id="findById" resultType="com.onlineShop.entity.Permissions">
+        select * from permissions where per_id =#{per_id}
+    </select>
+</mapper>

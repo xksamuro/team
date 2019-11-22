@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.onlineShop.dao.MenuDaoMapper">
+    <resultMap id="BaseResultMap" type="com.onlineShop.entity.Menu" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="menuname" property="menuname" jdbcType="VARCHAR" />
+    <result column="menudesc" property="menudesc" jdbcType="VARCHAR" />
+    <!--<result column="CREATETIME" property="createtime" jdbcType="DATE" />-->
+    <result column="menuurl" property="menuurl" jdbcType="VARCHAR" />
+    <result column="fathermenuid" property="fathermenuid" jdbcType="INTEGER" />
+    <result column="actionids" property="actionids" jdbcType="VARCHAR" />
+    <collection property="actionList" column="id"
+                select="com.onlineShop.dao.MenuDaoMapper.selectActionByMenuId">
+    </collection>
+
+    </resultMap>
+    <!--List<Menu> selectMenuByUserId(int id);-->
+    <select id="selectMenuByUserId" resultMap="BaseResultMap">
+ select menu.id id,menu.menuname MENUNAME,menu.menudesc MENUDESC,menu.menuurl MENUURL,menu.fathermenuid fathermenuid,
+    menu.actionids ACTIONIDS
+    from user us,role role,permissions per,menu menu,
+    user_role ur,role_permissions rp,permissions_menu pm
+    where us.id = #{id}
+    and ur.user_id = us.id
+    and ur.role_id = role.id
+    and rp.ROLE_ID = role.id
+    and rp.PER_ID = per.id
+    and pm.PER_ID = per.id
+    and pm.MENU_ID = menu.id
+  </select>
+    <!--List<Action> selectActionByMenuId(int MenuId);-->
+    <select id="selectActionByMenuId" resultType="com.onlineShop.entity.Action">
+        select ac.id ACTION_ID,ac.actionname ACTIONNAME
+        from menu menu,action ac,menu_action ma
+        where menu.id = #{menuId}
+        and ma.MENU_ID =menu.id
+        and ma.ACTION_ID = ac.id
+    </select>
+</mapper>

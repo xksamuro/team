@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.onlineShop.dao.UserDao">
+    <resultMap id="BaseResultMap" type="com.onlineShop.entity.User" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="username" property="username" jdbcType="VARCHAR" />
+    <result column="password" property="password" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="cardnumber" property="cardnumber" jdbcType="INTEGER" />
+    <result column="sex" property="sex" jdbcType="INTEGER" />
+    <result column="start_time" property="startTime" jdbcType="DATE" />
+    <result column="end_time" property="endTime" jdbcType="DATE" />
+    <result column="create_time" property="createTime" jdbcType="DATE" />
+    <result column="usertype" property="usertype" jdbcType="INTEGER" />
+    <result column="education" property="education" jdbcType="VARCHAR" />
+    <result column="isdelete" property="isdelete" jdbcType="INTEGER" />
+        <collection property="roles" ofType="com.onlineShop.entity.Role">
+            <id column="id" property="id"/>
+            <result column="rolename" property="rolename"/>
+            <collection property="permissionList" ofType="com.onlineShop.entity.Permissions">
+                <id column="id" property="perId"/>
+                <result column="pername" property="pername"/>
+            </collection>
+        </collection>
+    </resultMap>
+    <select id="selectByNameAndPassword" resultMap="BaseResultMap">
+    select *
+    from user us,role role,permissions per,menu menu,action ac,
+    user_role ur,role_permissions rp,permissions_menu pm,menu_action ma
+    where us.name = #{0}
+    and  us.password =#{1}
+    and ur.user_id = us.id
+    and ur.role_id = role.id
+    and rp.ROLE_ID = role.id
+    and rp.PER_ID = per.id
+    and pm.PER_ID = per.id
+    and pm.MENU_ID = menu.id
+    and ma.MENU_ID =menu.id
+    and ma.ACTION_ID = ac.id
+  </select>
+    <!--List<User> adminList();-->
+    <select id="adminList" resultMap="BaseResultMap">
+        select * from user where usertype = 1
+    </select>
+    <select id="teacherList" resultMap="BaseResultMap">
+        select * from user where usertype = 2
+    </select>
+    <!--void allocateRole(int userId, int roleId);-->
+    <insert id="allocateRole">
+    insert into user_role values (#{0},#{1});
+  </insert>
+    <insert id="addUser" parameterType="com.onlineShop.entity.User">
+    insert into user (id, name, username,
+      password, phone, email,cardnumber,
+      sex, start_time, end_time,
+      create_time, usertype, education,
+      isdelete)
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{username,jdbcType=VARCHAR},
+      #{password,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR},
+      #{cardnumber,jdbcType=VARCHAR},#{sex,jdbcType=VARCHAR}, #{startTime,jdbcType=DATE}, #{endTime,jdbcType=DATE},
+      #{createTime,jdbcType=DATE}, #{usertype,jdbcType=VARCHAR}, #{education,jdbcType=VARCHAR},
+      #{isdelete,jdbcType=INTEGER})
+  </insert>
+
+    <update id="updateUserById" parameterType="com.onlineShop.entity.User">
+      update user
+        <set>
+            <if test="name != null">
+                name=#{name,jdbcType=VARCHAR},
+            </if>
+            <if test="username != null">
+                username=#{username,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null">
+                password=#{password,jdbcType=VARCHAR},
+            </if>
+            <if test="phone != null">
+                phone=#{phone,jdbcType=VARCHAR},
+            </if>
+            <if test="email != null">
+                email=#{email,jdbcType=VARCHAR},
+            </if>
+            <if test="cardnumber != null">
+                cardnumber=#{cardnumber,jdbcType=VARCHAR},
+            </if>
+            <if test="sex != null">
+                sex=#{sex,jdbcType=VARCHAR},
+            </if>
+            <if test="startTime != null">
+                start_time=#{startTime,jdbcType=DATE},
+            </if>
+            <if test="endTime != null">
+                end_time=#{endTime,jdbcType=DATE},
+            </if>
+            <if test="createTime != null">
+                create_time=#{createTime,jdbcType=DATE},
+            </if>
+            <if test="usertype != null">
+                usertype=#{usertype,jdbcType=VARCHAR},
+            </if>
+            <if test="education != null">
+                education=#{education,jdbcType=VARCHAR},
+            </if>
+            <if test="isdelete != null">
+                isdelete=#{isdelete,jdbcType=INTEGER},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteUserById" parameterType="com.onlineShop.entity.User">
+    delete from user
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+
+  <select id="findUserById" resultType="com.onlineShop.entity.User">
+    select *
+    from user
+    where id = #{id}
+  </select>
+
+ <select id="findUserByName" resultMap="BaseResultMap">
+     select *
+    from user us,role role,permissions per,menu menu,action ac,
+    user_role ur,role_permissions rp,permissions_menu pm,menu_action ma
+    where us.name = #{name}
+    and ur.user_id = us.id
+    and ur.role_id = role.id
+    and rp.ROLE_ID = role.id
+    and rp.PER_ID = per.id
+    and pm.PER_ID = per.id
+    and pm.MENU_ID = menu.id
+    and ma.MENU_ID =menu.id
+    and ma.ACTION_ID = ac.id
+  </select>
+
+  <select id="findUserByUsername" resultType="com.onlineShop.entity.User">
+    select * from user where username = #{username}
+  </select>
+
+ <!--   <select id="findUserByInput" resultType="com.onlineShop.entity.User">
+    select *
+    from user
+    <where>
+        <if test="name!null">
+            and name like '%${name}%'
+        </if>
+        <if test="username!null">
+            and username like '%${username}%'
+        </if>
+    </where>
+  </select>-->
+
+    <select id="findUserByInput" resultType="com.onlineShop.entity.User">
+        select *
+        from user
+        <where>
+            <if test="username != null and username != ''">
+               AND username LIKE CONCAT(CONCAT('%',#{username},'%'))
+            </if>
+        </where>
+        ORDER BY id
+    </select>
+
+    <select id="getLists" resultType="com.onlineShop.entity.User">
+        select * from user
+  </select>
+</mapper>
